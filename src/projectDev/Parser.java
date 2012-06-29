@@ -45,71 +45,20 @@ public class Parser {
 		private static SentenceTools st = new SentenceTools();
 		private static String GRAMMAR_DIR = "./grammar_data/";
 		static String[] authorNames;// = new String[]{"aa","cc","p","q","r","x","y","z"};
-		private static Document dummy_doc = new Document();
 		private static HashMap<String,ArrayList<String>> otherSampleStrings;
 		private static HashMap<String,ArrayList<String>> authorSampleStrings;
 		private static HashMap<String,ArrayList<String>> toModifyStrings;
-		private static TreeProcessor[] allTreeProcessors = new TreeProcessor[3];
-		private static HashMap<String,ArrayList<TreeData>> allParsedAndOrdered = new HashMap<String,ArrayList<TreeData>>(3);
 		
 		
-		public static void setDocs(List<Document> otherSample, List<Document> authorSample, List<Document> toModify) throws Exception{
-			dummy_doc.setAuthor("Dummy author. This author should absolutley never be seen. If it is seen, and it is the last author in one of the lists, those documents won't process, and bad things will follow.");
-			Log.logln("Starting otherSample in DocumentParser... size: "+otherSample.size());
-			otherSampleStrings = getDocs(otherSample, false);
-			dummy_doc.setAuthor("Dummy author. This author should absolutley never be seen. If it is seen, and it is the last author in one of the lists, those documents won't process, and bad things will follow.");
-			Log.logln("Starting authorSample in DocumentParser... size: "+authorSample.size());
-			authorSampleStrings = getDocs(authorSample, false);
-			dummy_doc.setAuthor("Dummy author. This author should absolutley never be seen. If it is seen, and it is the last author in one of the lists, those documents won't process, and bad things will follow.");
-			Log.logln("Starting toModify in DocumentParser... size: "+toModify.size());
-			toModifyStrings = getDocs(toModify, true);
-		}
-			
-		public static HashMap<String,ArrayList<String>> getDocs(List<Document> docs, boolean isToModify) throws Exception{
-			boolean processAuthor;
-			String currentAuthor;
-			String docTitle;
-			String fullDoc = "";
-			docs.add(dummy_doc);
-			HashMap<String,ArrayList<String>> outMap = new HashMap<String,ArrayList<String>>();
-			currentAuthor = docs.get(0).getAuthor();
-			docTitle = docs.get(0).getTitle();
-			if(ObjectIO.objectExists(currentAuthor+"_"+docTitle,GRAMMAR_DIR) == false || isToModify){
-				processAuthor = true;
-			}
-			else
-				processAuthor = false;
-			for(Document d:docs){
-				if( currentAuthor.equals(d.getAuthor()) == false){
-					if (processAuthor == true)
-						outMap.put(currentAuthor+"_"+docTitle,st.makeSentenceTokens(fullDoc));
-					else
-						outMap.put(currentAuthor+"_"+docTitle,null);
-					fullDoc = "";
-					currentAuthor = d.getAuthor();
-					if(currentAuthor.equals(dummy_doc.getAuthor())){
-						docs.remove(docs.size()-1);
-						break;
-					}
-					docTitle = d.getTitle();
-					if(ObjectIO.objectExists(currentAuthor+"_"+docTitle,GRAMMAR_DIR) == true || isToModify)
-						processAuthor = false;
-					else
-						processAuthor = true;
-				}
-				if(processAuthor == true){
-					d.load();
-					fullDoc += d.stringify().replaceAll("\\p{C}"," ");// get rid of unicode control chars (causes parse errors).
-				}
-			}
-			return outMap;
-		}
-
+		
 		public HashMap<String,ArrayList<TreeData>> parseAllDocs() throws IOException{ 
 			String grammar =  "./jsan_resources/englishPCFG.ser.gz";
 			String[] options = { "-maxLength", "120", "-retainTmpSubcategories" };
-			LexicalizedParser lp = new LexicalizedParser(grammar, options);
+//			LexicalizedParser lp = new LexicalizedParser(grammar, options);
+			
+			LexicalizedParser lp = new LexicalizedParser()
 			TreebankLanguagePack tlp = new PennTreebankLanguagePack();
+			
 			GrammaticalStructureFactory gsf = tlp.grammaticalStructureFactory();
 			Iterable<List<? extends HasWord>> sentences;
 			ArrayList<HashMap<String,ArrayList<String>>> everything = new ArrayList<HashMap<String,ArrayList<String>>>(3); 
